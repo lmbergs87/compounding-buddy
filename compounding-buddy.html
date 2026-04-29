@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compounding Buddy — Oral Solution Reference</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23166534'/><text x='16' y='22' font-size='11' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>Rx</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:        #166534;
+      --green-light:  #dcfce7;
+      --green-mid:    #86efac;
+      --green-dark:   #14532d;
+      --green-accent: #16a34a;
+      --purple:       #6d28d9;
+      --purple-light: #ede9fe;
+      --gray-100:     #f5f7f9;
+      --gray-200:     #e8ecf0;
+      --gray-400:     #9aa5b4;
+      --gray-600:     #4a5568;
+      --gray-900:     #1a202c;
+      --warn-bg:      #fff8e1;
+      --warn-border:  #f59e0b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--green);
+      color: white;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      height: 56px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+    .logo:hover { opacity: 0.85; }
+    .proto-badge {
+      font-size: 0.6rem;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      padding: 2px 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .header-right { margin-left: auto; font-size: 0.75rem; opacity: 0.7; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 60%, var(--green-accent) 100%);
+      padding: 2rem 1.5rem 2.5rem;
+      text-align: center;
+      color: white;
+    }
+    .hero h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .hero p { opacity: 0.85; font-size: 0.9rem; margin-bottom: 1.25rem; }
+
+    .search-wrap {
+      position: relative;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .search-icon {
+      position: absolute; left: 0.9rem; top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-400); pointer-events: none;
+    }
+    #search {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.7rem;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    #search:focus { border-color: var(--green-mid); }
+    .recipe-count { margin-top: 0.6rem; font-size: 0.75rem; opacity: 0.6; }
+
+    /* ── Autocomplete ── */
+    #autocomplete {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: white; border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      overflow: hidden; z-index: 100; display: none;
+    }
+    .ac-item {
+      padding: 0.6rem 1rem; cursor: pointer; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      border-bottom: 1px solid var(--gray-200);
+      transition: background 0.1s; text-align: left;
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.focused { background: var(--green-light); }
+    .ac-cat { font-size: 0.7rem; color: var(--gray-400); margin-left: auto; white-space: nowrap; }
+    .ac-conc { font-size: 0.78rem; color: var(--green-accent); font-weight: 500; }
+
+    /* ── Main ── */
+    main { max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
+
+    /* ── Empty state ── */
+    #empty-state { text-align: center; padding: 3.5rem 1rem; color: var(--gray-400); }
+    #empty-state svg { margin-bottom: 1rem; opacity: 0.35; }
+    #empty-state p { font-size: 0.9rem; line-height: 1.6; }
+    .chip-grid {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      justify-content: center; margin-top: 1.2rem;
+      max-width: 540px; margin-left: auto; margin-right: auto;
+    }
+    .drug-chip {
+      background: white; border: 1px solid var(--gray-200);
+      border-radius: 20px; padding: 4px 12px; font-size: 0.78rem;
+      color: var(--green); cursor: pointer; transition: all 0.15s;
+      font-weight: 500;
+    }
+    .drug-chip:hover { background: var(--green-light); border-color: var(--green-mid); }
+
+    /* ── Recipe card ── */
+    #recipe-card { display: none; }
+
+    .recipe-header {
+      background: white; border-radius: 12px;
+      padding: 1.2rem 1.4rem; margin-bottom: 0.9rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .recipe-header-top { display: flex; align-items: flex-start; gap: 0.9rem; }
+    .recipe-icon {
+      width: 44px; height: 44px; background: var(--green-light);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .recipe-icon svg { color: var(--green); }
+    .recipe-name { font-size: 1.35rem; font-weight: 700; line-height: 1.1; }
+    .recipe-conc { font-size: 0.9rem; color: var(--green-accent); font-weight: 600; margin-top: 2px; }
+    .recipe-class {
+      margin-left: auto; font-size: 0.72rem;
+      background: var(--purple-light); color: var(--purple);
+      padding: 3px 10px; border-radius: 20px;
+      font-weight: 600; white-space: nowrap;
+    }
+    .storage-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .storage-badge {
+      font-size: 0.67rem; font-weight: 700;
+      padding: 4px 9px 4px 7px; border-radius: 5px;
+      display: inline-flex; align-items: center; gap: 5px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .badge-refrig { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .badge-rt     { background: linear-gradient(135deg, #d97706, #b45309); }
+    .badge-protect-light { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+    .badge-shake  { background: linear-gradient(135deg, #0891b2, #0e7490); }
+
+    /* ── Sections grid ── */
+    .sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+    @media (max-width: 600px) {
+      .sections-grid { grid-template-columns: 1fr; }
+    }
+    .section-card {
+      background: white; border-radius: 12px;
+      overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .section-card.full-width { grid-column: 1 / -1; }
+    .section-title {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--gray-600);
+    }
+    .section-title svg { color: var(--green); flex-shrink: 0; }
+    .section-body { padding: 0.9rem 1.1rem; }
+
+    /* ── Ingredients table ── */
+    .ing-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .ing-table th {
+      text-align: left; font-weight: 600; color: var(--gray-600);
+      font-size: 0.72rem; padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--gray-200);
+    }
+    .ing-table td { padding: 0.35rem 0.25rem 0.35rem 0; border-bottom: 1px solid var(--gray-200); vertical-align: top; }
+    .ing-table tr:last-child td { border-bottom: none; }
+    .ing-name { font-weight: 500; }
+    .ing-qty {
+      font-weight: 700; color: var(--green);
+      white-space: nowrap; text-align: right; padding-right: 0;
+    }
+    .ing-note { font-size: 0.75rem; color: var(--gray-400); display: block; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; counter-reset: step-counter; }
+    .steps li {
+      counter-increment: step-counter;
+      display: flex; gap: 0.7rem;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--gray-200);
+      font-size: 0.85rem; line-height: 1.5;
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step-counter);
+      background: var(--green-light); color: var(--green);
+      font-weight: 700; font-size: 0.72rem;
+      min-width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── BUD ── */
+    .bud-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .bud-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 0.7rem; border-radius: 8px; font-size: 0.85rem;
+    }
+    .bud-row.refrig { background: #eff6ff; }
+    .bud-row.rt     { background: #fffbeb; }
+    .bud-label { display: flex; align-items: center; gap: 0.4rem; color: var(--gray-600); }
+    .bud-value { font-weight: 700; color: var(--gray-900); }
+
+    /* ── Citation ── */
+    .citation-box {
+      background: var(--gray-100); border-radius: 8px;
+      padding: 0.75rem 0.9rem; font-size: 0.82rem;
+      color: var(--gray-600); line-height: 1.55;
+      border-left: 3px solid var(--green-mid);
+    }
+    .citation-box strong { color: var(--gray-900); display: block; margin-bottom: 0.2rem; }
+    .notes-box {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: 8px; padding: 0.75rem 0.9rem;
+      font-size: 0.83rem; line-height: 1.55; color: #78350f;
+      margin-top: 0.75rem;
+    }
+    .notes-box strong { display: block; margin-bottom: 0.2rem; }
+
+    /* ── No results ── */
+    #no-results { display: none; text-align: center; padding: 3rem 1rem; color: var(--gray-400); }
+
+    /* ── Disclaimer ── */
+    footer {
+      max-width: 900px; margin: 2rem auto 3rem;
+      padding: 0 1rem;
+      font-size: 0.73rem; color: var(--gray-400);
+      text-align: center; line-height: 1.6;
+    }
+    footer a { color: var(--gray-400); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="resetView()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Compounding Buddy
+  </div>
+  <span class="proto-badge">Prototype</span>
+  <span class="header-right">Oral Solutions</span>
+</header>
+
+<div class="hero">
+  <h1>Compounding Reference</h1>
+  <p>Literature-cited oral solution recipes for pharmacy compounding</p>
+  <div class="search-wrap">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="search" type="text" placeholder="Search by drug name…" autocomplete="off" spellcheck="false" />
+    <div id="autocomplete"></div>
+  </div>
+  <div class="recipe-count" id="recipe-count"></div>
+</div>
+
+<main>
+  <div id="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    <p>Search for a drug above, or browse common recipes:</p>
+    <div class="chip-grid" id="chip-grid"></div>
+  </div>
+
+  <div id="no-results">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
+    <p style="margin-top:0.75rem; font-size:0.9rem;">No recipes found. Try a different drug name.</p>
+  </div>
+
+  <div id="recipe-card"></div>
+</main>
+
+<footer>
+  ⚠️ <strong>For reference and educational use only.</strong> Always verify recipes against current literature, institutional guidelines, and USP &lt;795&gt; standards before compounding. Beyond-use dates may vary based on container, storage conditions, and stability data. This tool does not replace clinical judgment.
+</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// RECIPE DATABASE
+// ─────────────────────────────────────────────
+const RECIPES = [
+  {
+    id: "omeprazole",
+    name: "Omeprazole",
+    concentration: "2 mg/mL",
+    category: "PPI",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Omeprazole 20 mg capsules", qty: "10 capsules", note: "Open and empty contents" },
+      { name: "Sodium bicarbonate 8.4% solution", qty: "qs 100 mL", note: "Provides alkaline microenvironment" },
+    ],
+    steps: [
+      "Empty the contents of 10 omeprazole 20 mg capsules into a clean mortar.",
+      "Add approximately 50 mL of sodium bicarbonate 8.4% solution and mix well.",
+      "Transfer to a graduated cylinder and qs to 100 mL with additional sodium bicarbonate 8.4% solution.",
+      "Mix thoroughly. No filtration required.",
+      "Transfer to an amber bottle. Label with BUD and storage requirements.",
+      "Shake well before each use."
+    ],
+    bud: { refrig: "14 days", rt: "2 days" },
+    notes: "Sodium bicarbonate prevents acid degradation of omeprazole. Do not use with aluminum containers. Shake well before use.",
+    citation: {
+      authors: "DiGiacinto JL, Olsen KM, Bergman KL, Hoie EB.",
+      title: "Stability of suspension formulations of lansoprazole and omeprazole stored in amber-colored plastic oral syringes.",
+      journal: "Ann Pharmacother.",
+      year: "2000",
+      detail: "34(5):600–605."
+    }
+  },
+  {
+    id: "spironolactone",
+    name: "Spironolactone",
+    concentration: "5 mg/mL",
+    category: "Aldosterone antagonist",
+    storage: ["rt", "refrig"],
+    ingredients: [
+      { name: "Spironolactone 25 mg tablets", qty: "20 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet (or Cherry Syrup)", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 20 spironolactone 25 mg tablets in a mortar to a fine powder.",
+      "Levigate with a small amount of OraPlus to form a smooth paste.",
+      "Geometrically incorporate remaining OraPlus, mixing after each addition.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet.",
+      "Transfer to an amber bottle.",
+      "Label: Shake well before use. Store at room temperature or refrigerated."
+    ],
+    bud: { refrig: "28 days", rt: "28 days" },
+    notes: "Stable in both OraSweet and cherry syrup vehicles. 1:1 blend of OraPlus:OraSweet is the standard vehicle.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of labetalol hydrochloride, metoprolol tartrate, verapamil hydrochloride, and spironolactone with hydrochlorothiazide in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1996",
+      detail: "53(19):2304–2309."
+    }
+  },
+  {
+    id: "captopril",
+    name: "Captopril",
+    concentration: "1 mg/mL",
+    category: "ACE inhibitor",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Captopril 25 mg tablets", qty: "4 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 4 captopril 25 mg tablets to a fine powder.",
+      "Levigate with a small volume of OraPlus until a uniform paste forms.",
+      "Gradually incorporate remaining OraPlus with continuous mixing.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Pour into amber glass bottle and shake well.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "14 days" },
+    notes: "Captopril is susceptible to oxidation; minimize exposure to air during preparation. Discoloration may indicate degradation.",
+    citation: {
+      authors: "Nahata MC, Morosco RS, Hipple TF.",
+      title: "Effect of preparation method and storage on drug content of captopril solutions.",
+      journal: "Am J Hosp Pharm.",
+      year: "1994",
+      detail: "51(1):95–96."
+    }
+  },
+  {
+    id: "clonidine",
+    name: "Clonidine",
+    concentration: "0.1 mg/mL",
+    category: "Alpha-2 agonist",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Clonidine HCl 0.1 mg tablets", qty: "100 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Place 100 clonidine 0.1 mg tablets in a mortar and crush to a fine powder.",
+      "Add a small amount of OraPlus and triturate to form a smooth, lump-free paste.",
+      "Geometrically add remaining OraPlus, mixing thoroughly.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle. Shake well.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "28 days" },
+    notes: "May also be prepared using simple syrup. Monitor for precipitation. Keep refrigerated to maximize stability.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of bethanechol chloride, pyrazinamide, quinidine sulfate, rifampin, and tetracycline hydrochloride in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1998",
+      detail: "55(17):1804–1809."
+    }
+  },
+  {
+    id: "sildenafil",
+    name: "Sildenafil",
+    concentration: "2.5 mg/mL",
+    category: "PDE-5 inhibitor",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Sildenafil citrate 25 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 sildenafil 25 mg tablets to a fine powder in a mortar.",
+      "Levigate with a small amount of OraPlus to form a uniform paste.",
+      "Add remaining OraPlus geometrically with thorough mixing.",
+      "Qs to 100 mL with OraSweet SF in a graduated cylinder.",
+      "Transfer to an amber bottle.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "91 days" },
+    notes: "Used for pulmonary arterial hypertension in pediatric patients. Excellent stability in OraPlus/OraSweet SF vehicle.",
+    citation: {
+      authors: "Nahata MC, Morosco RS.",
+      title: "Stability of sildenafil citrate in two oral suspensions.",
+      journal: "Ann Pharmacother.",
+      year: "2003",
+      detail: "37(5):665–668."
+    }
+  },
+  {
+    id: "furosemide",
+    name: "Furosemide",
+    concentration: "10 mg/mL",
+    category: "Loop diuretic",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Furosemide 40 mg tablets", qty: "25 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 25 furosemide 40 mg tablets to a fine powder.",
+      "Levigate with a small portion of OraPlus to form a paste.",
+      "Add remaining OraPlus incrementally with thorough mixing.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: Protect from light. Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "91 days" },
+    storage: ["refrig", "protect-light"],
+    notes: "Furosemide is light-sensitive; store in amber bottles and protect from light during preparation. Furosemide oral solution 10 mg/mL is also commercially available.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of acetazolamide, allopurinol, azathioprine, clonazepam, and flucytosine in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1996",
+      detail: "53(16):1944–1949."
+    }
+  },
+  {
+    id: "metronidazole",
+    name: "Metronidazole",
+    concentration: "50 mg/mL",
+    category: "Antibiotic/Antiprotozoal",
+    storage: ["refrig", "rt"],
+    ingredients: [
+      { name: "Metronidazole 500 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 metronidazole 500 mg tablets to a fine powder.",
+      "Levigate with a portion of OraPlus to form a smooth paste.",
+      "Add remaining OraPlus geometrically with continuous mixing.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet.",
+      "Transfer to an amber bottle and label.",
+      "Shake well before each use."
+    ],
+    bud: { refrig: "60 days", rt: "30 days" },
+    notes: "Higher concentration (50 mg/mL) used for antiprotozoal indications. For H. pylori treatment, confirm dose with prescriber.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of ketoconazole, metolazone, metronidazole, procainamide hydrochloride, and spironolactone in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1996",
+      detail: "53(17):2073–2078."
+    }
+  },
+  {
+    id: "atenolol",
+    name: "Atenolol",
+    concentration: "2 mg/mL",
+    category: "Beta-blocker",
+    storage: ["rt", "refrig"],
+    ingredients: [
+      { name: "Atenolol 100 mg tablets", qty: "2 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 2 atenolol 100 mg tablets to a fine, uniform powder.",
+      "Levigate with a small amount of OraPlus to form a smooth paste.",
+      "Geometrically incorporate remaining OraPlus.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: Store at room temperature or refrigerate. Shake well before use."
+    ],
+    bud: { rt: "56 days", refrig: "56 days" },
+    notes: "Stable in OraPlus/OraSweet SF or OraPlus/OraSweet 1:1 vehicles. Suitable for pediatric patients requiring dose adjustment.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of labetalol hydrochloride, metoprolol tartrate, verapamil hydrochloride, and spironolactone with hydrochlorothiazide in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1996",
+      detail: "53(19):2304–2309."
+    }
+  },
+  {
+    id: "baclofen",
+    name: "Baclofen",
+    concentration: "5 mg/mL",
+    category: "Muscle relaxant",
+    storage: ["rt", "refrig"],
+    ingredients: [
+      { name: "Baclofen 20 mg tablets", qty: "25 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 25 baclofen 20 mg tablets to a fine powder in a mortar.",
+      "Levigate with a small portion of OraPlus to form a smooth paste.",
+      "Add remaining OraPlus incrementally, mixing well after each addition.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Mix thoroughly. Transfer to an amber bottle.",
+      "Label: Store at room temperature or refrigerate. Shake well before use."
+    ],
+    bud: { rt: "30 days", refrig: "30 days" },
+    notes: "Commonly compounded for pediatric spasticity management. Both OraSweet and OraSweet SF vehicles are acceptable.",
+    citation: {
+      authors: "Nahata MC, Morosco RS, Hipple TF.",
+      title: "Stability of baclofen in two oral suspension vehicles at different temperatures.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "2000",
+      detail: "57(19):1783–1785."
+    }
+  },
+  {
+    id: "lisinopril",
+    name: "Lisinopril",
+    concentration: "1 mg/mL",
+    category: "ACE inhibitor",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Lisinopril 10 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 lisinopril 10 mg tablets to a fine powder.",
+      "Levigate with OraPlus to form a smooth paste.",
+      "Gradually incorporate remaining OraPlus with thorough mixing.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "91 days" },
+    notes: "Very stable in OraPlus/OraSweet SF vehicle. Frequently compounded for pediatric hypertension. Refrigeration strongly recommended.",
+    citation: {
+      authors: "Webster AA, English BA, Rose DJ.",
+      title: "The stability of lisinopril in a flavored dye-free oral liquid.",
+      journal: "Pharm Technol.",
+      year: "1997",
+      detail: "21:122–130."
+    }
+  },
+  {
+    id: "hydralazine",
+    name: "Hydralazine",
+    concentration: "4 mg/mL",
+    category: "Vasodilator",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Hydralazine HCl 50 mg tablets", qty: "8 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 8 hydralazine 50 mg tablets to a fine powder.",
+      "Levigate with a small amount of OraPlus to form a uniform paste.",
+      "Add remaining OraPlus geometrically with thorough mixing.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet.",
+      "Transfer to amber bottle.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "28 days" },
+    notes: "Hydralazine degrades rapidly at room temperature. Use refrigerated storage only. Light amber color of final preparation is normal.",
+    citation: {
+      authors: "Nahata MC, Morosco RS, Hipple TF.",
+      title: "Stability of hydralazine hydrochloride in oral liquid preparations.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1993",
+      detail: "50(11):2356–2358."
+    }
+  },
+  {
+    id: "amlodipine",
+    name: "Amlodipine",
+    concentration: "1 mg/mL",
+    category: "Calcium channel blocker",
+    storage: ["rt", "refrig"],
+    ingredients: [
+      { name: "Amlodipine besylate 10 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 amlodipine 10 mg tablets to a fine powder.",
+      "Levigate with a portion of OraPlus to form a smooth paste.",
+      "Add remaining OraPlus with continuous mixing.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: Shake well before use. May be stored at room temperature or refrigerated."
+    ],
+    bud: { rt: "56 days", refrig: "56 days" },
+    notes: "Widely used in pediatric hypertension. Stable in multiple vehicles. Both 5 mg/tablet and 10 mg/tablet strengths can be used by adjusting the number of tablets.",
+    citation: {
+      authors: "Nahata MC, Morosco RS, Hipple TF.",
+      title: "Stability of amlodipine besylate in two oral liquid preparations.",
+      journal: "Ann Pharmacother.",
+      year: "1999",
+      detail: "33(2):185–187."
+    }
+  },
+  {
+    id: "tacrolimus",
+    name: "Tacrolimus",
+    concentration: "0.5 mg/mL",
+    category: "Immunosuppressant",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Tacrolimus 1 mg capsules", qty: "50 capsules", note: "Empty capsule contents" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Open and empty the contents of 50 tacrolimus 1 mg capsules into a mortar.",
+      "Add a small amount of OraPlus and mix to form a smooth paste.",
+      "Geometrically incorporate remaining OraPlus.",
+      "Transfer to a graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle. Shake well.",
+      "Label: Refrigerate. Shake well before use. Handle with care — immunosuppressant."
+    ],
+    bud: { refrig: "56 days" },
+    notes: "Compounded for pediatric transplant patients requiring precise dose titration. Use PPE during preparation. Concentration may vary based on patient need.",
+    citation: {
+      authors: "Alvarez ML, Pérez-Blanco FJ, Carretero-Hernández M, et al.",
+      title: "Stability of a tacrolimus oral suspension.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1998",
+      detail: "55(10):1051–1053."
+    }
+  },
+  {
+    id: "carvedilol",
+    name: "Carvedilol",
+    concentration: "1.25 mg/mL",
+    category: "Beta-blocker (non-selective)",
+    storage: ["refrig"],
+    ingredients: [
+      { name: "Carvedilol 12.5 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 carvedilol 12.5 mg tablets to a fine powder in a mortar.",
+      "Add a small amount of OraPlus and levigate to a smooth, uniform paste.",
+      "Incrementally add remaining OraPlus, mixing well between additions.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: Refrigerate. Shake well before use."
+    ],
+    bud: { refrig: "84 days" },
+    notes: "Compounded for pediatric heart failure. Shake vigorously before use as sedimentation may occur. Also reported stable in OraPlus/OraSweet 1:1.",
+    citation: {
+      authors: "Nahata MC, Morosco RS.",
+      title: "Stability of carvedilol in two oral-liquid dosage forms.",
+      journal: "Ann Pharmacother.",
+      year: "2003",
+      detail: "37(12):1768–1770."
+    }
+  },
+  {
+    id: "metoprolol",
+    name: "Metoprolol",
+    concentration: "10 mg/mL",
+    category: "Beta-blocker (selective)",
+    storage: ["rt", "refrig"],
+    ingredients: [
+      { name: "Metoprolol tartrate 100 mg tablets", qty: "10 tablets" },
+      { name: "OraPlus", qty: "50 mL" },
+      { name: "OraSweet SF", qty: "qs 100 mL" },
+    ],
+    steps: [
+      "Crush 10 metoprolol tartrate 100 mg tablets to a fine powder.",
+      "Levigate with a small volume of OraPlus to form a smooth paste.",
+      "Add remaining OraPlus geometrically with thorough mixing.",
+      "Transfer to graduated cylinder and qs to 100 mL with OraSweet SF.",
+      "Transfer to an amber bottle.",
+      "Label: May store at room temperature or refrigerated. Shake well before use."
+    ],
+    bud: { rt: "56 days", refrig: "56 days" },
+    notes: "Metoprolol tartrate (immediate-release) is used; do not use metoprolol succinate extended-release tablets. Stable in multiple oral vehicle combinations.",
+    citation: {
+      authors: "Allen LV Jr, Erickson MA.",
+      title: "Stability of labetalol hydrochloride, metoprolol tartrate, verapamil hydrochloride, and spironolactone with hydrochlorothiazide in extemporaneously compounded oral liquids.",
+      journal: "Am J Health-Syst Pharm.",
+      year: "1996",
+      detail: "53(19):2304–2309."
+    }
+  }
+];
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+const STORAGE_LABELS = {
+  refrig: { label: "Refrigerate (2–8°C)", icon: "❄️", cls: "badge-refrig" },
+  rt:     { label: "Room Temp (15–30°C)", icon: "🌡️",  cls: "badge-rt" },
+  "protect-light": { label: "Protect from Light", icon: "🌙", cls: "badge-protect-light" },
+  shake:  { label: "Shake Well", icon: "🔄", cls: "badge-shake" }
+};
+
+function unique(arr) {
+  const seen = new Set();
+  return arr.filter(s => { if (seen.has(s)) return false; seen.add(s); return true; });
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+function renderRecipe(recipe) {
+  const storages = unique(recipe.storage || []);
+
+  const badgesHtml = storages.map(s => {
+    const info = STORAGE_LABELS[s] || {};
+    return `<span class="storage-badge ${info.cls || ''}">${info.icon || ''} ${info.label || s}</span>`;
+  }).join('');
+
+  const ingRows = recipe.ingredients.map(i => `
+    <tr>
+      <td class="ing-name">${i.name}${i.note ? `<span class="ing-note">${i.note}</span>` : ''}</td>
+      <td class="ing-qty">${i.qty}</td>
+    </tr>`).join('');
+
+  const stepItems = recipe.steps.map(s => `<li>${s}</li>`).join('');
+
+  const budRows = (() => {
+    let rows = '';
+    if (recipe.bud.refrig) rows += `
+      <div class="bud-row refrig">
+        <span class="bud-label">❄️ Refrigerated (2–8°C)</span>
+        <span class="bud-value">${recipe.bud.refrig}</span>
+      </div>`;
+    if (recipe.bud.rt) rows += `
+      <div class="bud-row rt">
+        <span class="bud-label">🌡️ Room Temperature</span>
+        <span class="bud-value">${recipe.bud.rt}</span>
+      </div>`;
+    return rows;
+  })();
+
+  const notesHtml = recipe.notes ? `
+    <div class="notes-box">
+      <strong>⚠️ Compounding Notes</strong>
+      ${recipe.notes}
+    </div>` : '';
+
+  const c = recipe.citation;
+  const citationHtml = c ? `
+    <div class="citation-box">
+      <strong>${c.authors}</strong>
+      "${c.title}" <em>${c.journal}</em> ${c.year}; ${c.detail}
+    </div>
+    ${notesHtml}
+  ` : notesHtml;
+
+  $('recipe-card').innerHTML = `
+    <div class="recipe-header">
+      <div class="recipe-header-top">
+        <div class="recipe-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        </div>
+        <div>
+          <div class="recipe-name">${recipe.name}</div>
+          <div class="recipe-conc">${recipe.concentration} oral solution</div>
+        </div>
+        <div class="recipe-class">${recipe.category}</div>
+      </div>
+      <div class="storage-badges">${badgesHtml}</div>
+    </div>
+
+    <div class="sections-grid">
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          Ingredients
+          <span style="margin-left:auto;font-size:0.68rem;font-weight:500;color:var(--gray-400)">per 100 mL</span>
+        </div>
+        <div class="section-body">
+          <table class="ing-table">
+            <thead><tr><th>Component</th><th style="text-align:right">Quantity</th></tr></thead>
+            <tbody>${ingRows}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Beyond-Use Date
+        </div>
+        <div class="section-body">
+          <div class="bud-grid">${budRows}</div>
+        </div>
+      </div>
+
+      <div class="section-card full-width">
+        <div class="section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Preparation Method
+        </div>
+        <div class="section-body">
+          <ol class="steps">${stepItems}</ol>
+        </div>
+      </div>
+
+      <div class="section-card full-width">
+        <div class="section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Literature Citation
+        </div>
+        <div class="section-body">${citationHtml}</div>
+      </div>
+    </div>
+  `;
+
+  $('recipe-card').style.display = 'block';
+  $('empty-state').style.display = 'none';
+  $('no-results').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+// SEARCH
+// ─────────────────────────────────────────────
+function findRecipes(q) {
+  const term = q.toLowerCase().trim();
+  if (!term) return [];
+  return RECIPES.filter(r =>
+    r.name.toLowerCase().includes(term) ||
+    r.category.toLowerCase().includes(term) ||
+    r.concentration.toLowerCase().includes(term)
+  );
+}
+
+function showAutocomplete(matches) {
+  const ac = $('autocomplete');
+  if (!matches.length) { ac.style.display = 'none'; return; }
+  ac.innerHTML = matches.slice(0, 6).map((r, i) => `
+    <div class="ac-item${i === acIndex ? ' focused' : ''}" data-id="${r.id}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+      <span>${r.name}</span>
+      <span class="ac-conc">${r.concentration}</span>
+      <span class="ac-cat">${r.category}</span>
+    </div>`).join('');
+  ac.style.display = 'block';
+  ac.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      selectRecipe(el.dataset.id);
+    });
+  });
+}
+
+function hideAutocomplete() {
+  $('autocomplete').style.display = 'none';
+  acIndex = -1;
+}
+
+function selectRecipe(id) {
+  const recipe = RECIPES.find(r => r.id === id);
+  if (!recipe) return;
+  $('search').value = recipe.name;
+  hideAutocomplete();
+  renderRecipe(recipe);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetView() {
+  $('search').value = '';
+  $('recipe-card').style.display = 'none';
+  $('no-results').style.display = 'none';
+  $('empty-state').style.display = 'block';
+  hideAutocomplete();
+}
+
+// ─────────────────────────────────────────────
+// KEYBOARD NAV
+// ─────────────────────────────────────────────
+let acIndex = -1;
+let lastMatches = [];
+
+$('search').addEventListener('input', e => {
+  const q = e.target.value;
+  acIndex = -1;
+  lastMatches = findRecipes(q);
+  if (!q.trim()) {
+    resetView();
+    return;
+  }
+  showAutocomplete(lastMatches);
+  if (!lastMatches.length) {
+    $('recipe-card').style.display = 'none';
+    $('empty-state').style.display = 'none';
+    $('no-results').style.display = 'block';
+  }
+});
+
+$('search').addEventListener('keydown', e => {
+  const items = $('autocomplete').querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acIndex = Math.min(acIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === acIndex));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acIndex = Math.max(acIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('focused', i === acIndex));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acIndex >= 0 && items[acIndex]) {
+      selectRecipe(items[acIndex].dataset.id);
+    } else if (lastMatches.length === 1) {
+      selectRecipe(lastMatches[0].id);
+    }
+  } else if (e.key === 'Escape') {
+    hideAutocomplete();
+  }
+});
+
+$('search').addEventListener('blur', () => {
+  setTimeout(hideAutocomplete, 150);
+});
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+(function init() {
+  $('recipe-count').textContent = `${RECIPES.length} oral solution recipes`;
+
+  // Populate chip grid
+  const chipGrid = $('chip-grid');
+  RECIPES.forEach(r => {
+    const chip = document.createElement('button');
+    chip.className = 'drug-chip';
+    chip.textContent = `${r.name} ${r.concentration}`;
+    chip.addEventListener('click', () => selectRecipe(r.id));
+    chipGrid.appendChild(chip);
+  });
+})();
+</script>
+</body>
+</html>
