@@ -60,7 +60,21 @@
       text-transform: uppercase;
       font-weight: 600;
     }
-    .header-right { margin-left: auto; font-size: 0.75rem; opacity: 0.7; }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+    .header-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .header-btn:hover { background: rgba(255,255,255,0.25); }
 
     /* ── Hero ── */
     .hero {
@@ -260,14 +274,65 @@
     /* ── No results ── */
     #no-results { display: none; text-align: center; padding: 3rem 1rem; color: var(--gray-400); }
 
-    /* ── Disclaimer ── */
+    /* ── Correction bar ── */
+    .correction-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; margin-top: 0.9rem; margin-bottom: 0.5rem;
+      font-size: 0.8rem; color: var(--gray-400);
+    }
+    .correction-link {
+      color: var(--green); text-decoration: none; font-weight: 500;
+      border-bottom: 1px dashed var(--green-mid);
+    }
+    .correction-link:hover { color: var(--green-dark); }
+
+    /* ── Footer ── */
     footer {
-      max-width: 900px; margin: 2rem auto 3rem;
-      padding: 0 1rem;
+      max-width: 900px; margin: 0 auto 3rem;
+      padding: 1.5rem 1rem;
       font-size: 0.73rem; color: var(--gray-400);
       text-align: center; line-height: 1.6;
     }
-    footer a { color: var(--gray-400); }
+    footer strong { color: var(--gray-600); }
+    footer a { color: var(--green); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── About Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 200;
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: white; border-radius: 16px;
+      max-width: 540px; width: 100%; padding: 2rem;
+      position: relative; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--gray-100); border: none;
+      width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: var(--gray-200); }
+    .modal-logo { font-size: 1.4rem; font-weight: 700; color: var(--green); margin-bottom: 0.2rem; }
+    .modal-subtitle { font-size: 0.82rem; color: var(--gray-400); margin-bottom: 1.2rem; }
+    .modal-section { margin-bottom: 1.1rem; }
+    .modal-section h3 { font-size: 0.85rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.3rem; }
+    .modal-section p { font-size: 0.84rem; color: var(--gray-600); line-height: 1.6; }
+    .modal-warning {
+      background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+      border-radius: 0 6px 6px 0; padding: 0.7rem 0.9rem;
+      font-size: 0.8rem; color: #78350f; line-height: 1.5; margin-bottom: 1.1rem;
+    }
+    .modal-divider { border: none; border-top: 1px solid var(--gray-200); margin: 1rem 0; }
+    .modal-footer-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .modal-footer-links a { font-size: 0.8rem; color: var(--green); text-decoration: none; }
+    .modal-footer-links a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -278,7 +343,10 @@
     Compounding Buddy
   </div>
   <span class="proto-badge">Prototype</span>
-  <span class="header-right">Oral Solutions</span>
+  <div class="header-actions">
+    <button class="header-btn" onclick="openAbout()">About &amp; Disclaimer</button>
+    <a class="header-btn" href="mailto:lmbergs@gmail.com?subject=Compounding%20Buddy%20Feedback&body=Drug%20name%3A%0AField%20with%20issue%3A%0ACorrection%20or%20comment%3A" style="text-decoration:none;">✏️ Suggest a Fix</a>
+  </div>
 </header>
 
 <div class="hero">
@@ -308,8 +376,55 @@
 </main>
 
 <footer>
-  ⚠️ <strong>For reference and educational use only.</strong> Always verify recipes against current literature, institutional guidelines, and USP &lt;795&gt; standards before compounding. Beyond-use dates may vary based on container, storage conditions, and stability data. This tool does not replace clinical judgment.
+  <strong>⚠ Prototype / Beta:</strong> Compounding Buddy is currently in early development and has not undergone formal clinical validation. Data is provided for reference and educational purposes only — it does not substitute for clinical judgment, institutional policy, current manufacturer prescribing information, or USP &lt;795&gt; guidelines. Beyond-use dates may vary based on container, storage conditions, and individual stability data. Always verify recipes with your pharmacy's approved references before compounding. <strong>Not for use as a sole clinical decision-making tool.</strong>
+  <br><br>
+  <a href="mailto:lmbergs@gmail.com?subject=Compounding%20Buddy%20Feedback">Feedback &amp; corrections welcome →</a>
+  &nbsp;•&nbsp; Compounding Buddy
 </footer>
+
+<!-- ── About Modal ── -->
+<div class="modal-overlay" id="about-modal" onclick="if(event.target===this)closeAbout()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAbout()">×</button>
+    <div class="modal-logo">Compounding Buddy</div>
+    <div class="modal-subtitle">Oral Solution Reference &nbsp;•&nbsp; Prototype</div>
+
+    <div class="modal-warning">
+      <strong>⚠ Prototype disclaimer:</strong> Compounding Buddy is in early development and has not been formally validated. It is a reference tool only — always verify with your institution's approved references, current stability literature, and USP &lt;795&gt; guidelines before compounding any preparation.
+    </div>
+
+    <div class="modal-section">
+      <h3>What is Compounding Buddy?</h3>
+      <p>Compounding Buddy is a quick reference for extemporaneous oral solution preparation — designed for pharmacists and pharmacy technicians who need a literature-cited recipe at the bench. Each entry includes ingredients, a step-by-step method, beyond-use dating, and a primary citation.</p>
+    </div>
+
+    <div class="modal-section">
+      <h3>What Compounding Buddy is NOT</h3>
+      <p>Compounding Buddy is not a substitute for Trissel's, King Guide, your institution's formulary, or a formal stability study. It does not replace pharmacist verification or account for patient-specific factors, institutional protocols, or local water quality considerations.</p>
+    </div>
+
+    <div class="modal-section">
+      <h3>Data sources</h3>
+      <p>Recipes are compiled from published stability studies in peer-reviewed pharmacy literature (primarily <em>Am J Health-Syst Pharm</em> and <em>Ann Pharmacother</em>). Each entry includes its primary citation. Consult the original article for full methodology and confidence intervals.</p>
+    </div>
+
+    <div class="modal-section">
+      <h3>Coverage</h3>
+      <p>Current version covers common oral solutions only, starting with formulations frequently needed in pediatric and adult care settings. Additional vehicles, concentrations, and dosage forms are planned for future versions.</p>
+    </div>
+
+    <div class="modal-section">
+      <h3>Found an error?</h3>
+      <p>Clinical accuracy is the top priority. If something looks wrong, please use the <strong>"Suggest a Fix"</strong> button — every report is reviewed.</p>
+    </div>
+
+    <hr class="modal-divider">
+    <div class="modal-footer-links">
+      <a href="mailto:lmbergs@gmail.com?subject=Compounding%20Buddy%20Feedback&body=Drug%20name%3A%0AField%20with%20issue%3A%0ACorrection%20or%20comment%3A">✏️ Suggest a correction</a>
+      <a href="mailto:lmbergs@gmail.com?subject=Compounding%20Buddy%20General%20Feedback">💬 General feedback</a>
+    </div>
+  </div>
+</div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -879,10 +994,26 @@ function renderRecipe(recipe) {
     </div>
   `;
 
+  // append correction bar
+  const corrBar = document.createElement('div');
+  corrBar.className = 'correction-bar';
+  corrBar.innerHTML = `<span>Something look off?</span> <a class="correction-link" href="mailto:lmbergs@gmail.com?subject=Compounding%20Buddy%20Correction%3A%20${encodeURIComponent(recipe.name)}&body=Drug%20name%3A%20${encodeURIComponent(recipe.name)}%0AField%20with%20issue%3A%0ACorrection%20or%20comment%3A">Suggest a correction</a>`;
+  $('recipe-card').appendChild(corrBar);
+
   $('recipe-card').style.display = 'block';
   $('empty-state').style.display = 'none';
   $('no-results').style.display = 'none';
 }
+
+function openAbout() {
+  $('about-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAbout() {
+  $('about-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAbout(); });
 
 // ─────────────────────────────────────────────
 // SEARCH
